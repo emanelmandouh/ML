@@ -1,4 +1,34 @@
 README 
 This file describes the details about Car2Buy , a car predictor ML application that will help user predict car prices based on a specific list of Feature
 Step1: Data Loading and Exploration 
-	- Data Can be Accessed from this link 
+- Data Can be Accessed from this link https://github.com/emanelmandouh/ML/blob/main/Car_Price_Predictor/data/vehicles.csv
+- The Code Follow CRISP-ML Model that starts by
+- Step1: Bussiness Understanding, Formulation 
+- Step2: Data Understanding , here we concluded 
+  - Data Size is 426,880 Row and 18 Coloumn
+  - Some Features such as price, year , odemeter are numerical data type
+  - cylinders : no of cylinders is categorical yet need to be converted to numerical
+  - VIN, ID : is not clear about their interpretation
+  - Some Categorical Data with Large Number of Unique Values Can be Dropped from the Model:  model, VIN, region which make their encoding very difficuilt
+  - Some Features have huge number of missed values : size 70% Missed, 40% (cylinder, condition, VIN), ~30% (drive, paint, type)so we need to check further
+Step2: Data Mainpulation
+  - Drop NA from coloumns with Few Na
+  - Complete NA in Cylinders , Change Cylinder to Float, Group by Manufactuerer/Year and Take the Median
+  - Extract Missed Type Values from Car Manufacturer Data
+  - Drop Coloumns such as ID, VIN
+  - Translate Car Year to Car Age
+Step3: Study Correlation between Numerical Variables , Categorical Variables w.r.t Output Variable "Price"
+  - Price and Odometer have outliers , so data will be filtered to contain cars with odometer < 500,000 and prices < 999,999,999
+  - 95% of title_status is clean, so it will not be relevant to our prediction
+  - Car age, odometer in range have negative correlation with price, while cylinders have positive impact
+  - size : full size came most expensive, transmission : automatic came as most expensive
+  - ferrai, tesla, ram. martin came as most expensive cars
+  - diesel, electric fuel type drive cars came as most expensive
+  - truck, offroad, pickup, bus, van, came =more expensive than other type
+  - new, like new, excellent came more expensive than other look category
+  - paint color , drive, state has no great impact
+Step4 : Modeling
+  - Create Dummies for Categorical Data 
+  - Multi Linear Regression Model is Excercised with different Feature Selection (Sequential, Ridge, Lasso)
+  - GridSearchCV is used for Cross Validation and Alpha Selection in Ridge
+  - 
