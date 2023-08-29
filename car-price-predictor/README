@@ -1,0 +1,61 @@
+README 
+This file describes the details about Car2Buy , a car predictor ML application that will help user predict car prices based on a specific list of Feature
+Step1: Data Loading and Exploration 
+- Data Can be Accessed from this link https://github.com/emanelmandouh/ML/blob/main/Car_Price_Predictor/data/vehicles.csv
+- The Code Follow CRISP-ML Model that starts by
+- Step1: Bussiness Understanding, Formulation 
+- Step2: Data Understanding , here we concluded 
+  - Data Size is 426,880 Row and 18 Coloumn
+  - Some Features such as price, year , odemeter are numerical data type
+  - cylinders : no of cylinders is categorical yet need to be converted to numerical
+  - VIN, ID : is not clear about their interpretation
+  - Some Categorical Data with Large Number of Unique Values Can be Dropped from the Model:  model, VIN, region which make their encoding very difficuilt
+  - Some Features have huge number of missed values : size 70% Missed, 40% (cylinder, condition, VIN), ~30% (drive, paint, type)so we need to check further
+Step2: Data Mainpulation
+  - Drop NA from coloumns with Few Na
+  - Complete NA in Cylinders , Change Cylinder to Float, Group by Manufactuerer/Year and Take the Median
+  - Extract Missed Type Values from Car Manufacturer Data
+  - Drop Coloumns such as ID, VIN
+  - Translate Car Year to Car Age
+Step3: Study Correlation between Numerical Variables , Categorical Variables w.r.t Output Variable "Price"
+  - Price and Odometer have outliers , so data will be filtered to contain cars with odometer < 500,000 and prices < 999,999,999
+  - 95% of title_status is clean, so it will not be relevant to our prediction
+  - Car age, odometer in range have negative correlation with price, while cylinders have positive impact
+  - size : full size came most expensive, transmission : automatic came as most expensive
+  - ferrai, tesla, ram. martin came as most expensive cars
+  - diesel, electric fuel type drive cars came as most expensive
+  - truck, offroad, pickup, bus, van, came =more expensive than other type
+  - new, like new, excellent came more expensive than other look category
+  - paint color , drive, state has no great impact
+Step4 : Modeling
+  - Create Dummies for Categorical Data 
+  - Multi Linear Regression Model is Excercised with different Feature Selection (Sequential, Ridge, Lasso)
+  - GridSearchCV is used for Cross Validation and Alpha Selection in Ridge
+Step5: Evluation
+- Model Name	Train MSE	Test MSE
+- Model1: Linear Regression with All Parameters	2190348734.91	161754011.5
+- Model2: Linear Regression with Sequential Feature Selection (8 Features)	2192786552.32	163880774.4
+- Model3: Linear Regression with GridSearch for Best no of Parameter [2,4]	2198284217.78	169330885.39
+- Model4: Ridge with Data Scaling , GridSearch for Best Alpha 1000	2190353491.55	161735046.12
+- Model5: Lasso 	2190348759.77	161753934.13
+- Model6: Linear Regression with Lasso for Feature Selection	2190348939.75	161756095.85
+- Model 7 : 3-Degree Polynomial Model with Ridge Feature Selection 'odometer','cylinders','Car-Age'	2193115162.67	161135123.2
+- Model 8 : 3-Degree Ploynomial, K-Fold Cross Validation 	1597771257.71	1598065359
+
+Model Parameters Evluation 
+- Model of Linear Regression with All Parameters : Came with 31 Features higest positive parameters are No of Cylinders and Car Type (offroad, pickup, truck, coupe),fuel (diesel then electric), negatively impacting parameters are ondition (Salvage), type (hatchback), fuel (gas, hyprid), type (min-van, sedan)
+- Linear Regression with Sequential Feature Selection up to 8 : Came with 8 Features Selection : Negatively Impact (Odometer, Car age, Transmission Automatic, type hatchback/sedan) positive impact no of cylinder, fuel(diesel)
+- Lasso Came with less no of Parameters : 28 dropped some categorical parameters like condition-excellent, transmission-manual, type-suv
+- Linear Model with High Polynomial Degress with K-Fold Validation came with best for odometer, Car Age and No of Cylinders as Car Price Predictor
+
+Step6: Deployment /Recommendation
+The 8 Models have been Evluated Using MSE , the best results obtained by
+- Apply Grid Search with Best No of Feature Selection Using all Parameter in Linear Regression
+- Best MSE for training and test data obtained By -- Linear Regression Model, with polynomial degree of 3 to 3 numerical parameters (Odometer, Car Age, Cylinders) -- Feature Selection Done by Ridge -- Using 5-Fold Cross Validation
+- Paramerters highly impact Car Price are Odometer, Car_Age and No of Cylnders.
+- The Model and Data Analaysis Demonstrates
+  - Car with High Price will be ones : less odoemeter value, less car-age, high number of cylinders (may be this reflect engine strength)
+  - Model Parameters Weights Demonstrate that Car of Type (Offroad, pickup, truck, coupe) will come with higher price than other tyes
+  - Also care will fuel diesel will come higher than electric
+  - low price cars will be of type hatchpack, sedan,mini-van with fuel (gas)
+
