@@ -1,0 +1,99 @@
+README 
+-	This file describes a Classification ML Approach to predict customer subscription to bank deposits . The data used here is the Portuguese Marketing Campaign. 
+-	The Business Goal of this work is to use this data to build ML Model that can predict the success of client subscription to bank deposit. 
+-	Classification ML model can be used in improve the bank campaigns effectiveness, by defining the main attributes that affect subscription success and hence help in better utilization of human bandwidth (effort/time), no of phone calls that need to be done to reach the target success rate. 
+-	The model will help selecting less number of effective high quality participants who are expected to be potential buying customers.
+-------------------------------------------------------------------------------------------------------------------------------------------
+Step1: Data Loading and Exploration 
+-------------------------------------------------------------------------------------------------------------------------------------------
+- Data Can be Accessed from this link https://archive.ics.uci.edu/dataset/222/bank+marketing
+- It is also downloadable from ./data Directory in this Github Repo.
+- The Code Follow CRISP-ML Model that starts by
+- Step1: Bussiness Understanding, Formulation 
+-------------------------------------------------------------------------------------------------------------------------------------------
+- Step2: Data Understanding , here we concluded 
+-------------------------------------------------------------------------------------------------------------------------------------------
+  - Data Size is 411,88 Rows and 21 Coloumns
+  - The Traget Variable 'y' describes (yes/no) for customer subscription to bank deposite.
+  - The Other 20 Features are 
+	- Categorical : 'job', 'marital', 'education', 'default', 'housing', 'loan', 'contact','month', 'day_of_week', 'poutcome'
+	- Numericals : 'age', 'duration', 'campaign', 'pdays', 'previous', 'emp.var.rate','cons.price.idx', 'cons.conf.idx', 'euribor3m', 'nr.employed'
+  - The Bank Marketing Data has no Null Values, yet some Categorical Features have "UnKnown" that has been handled by Imputation.
+  - The Data has unbalnced Classes with majority of "No" : Ratio of Accepted Subscription vs Rejected Ones 11.265417111780131 %
+  - Data Demonstrates The different features show that they differ in the range of values. When modeling, standardization is required
+-------------------------------------------------------------------------------------------------------------------------------------------
+- Step3: Data Mainpulation
+-------------------------------------------------------------------------------------------------------------------------------------------
+  - Handling Unknowns in Categorical Coloumns By Impution 
+  - Focus on Customer 7 Features Only 
+	- Categorical : 'job', 'marital', 'education', 'default', 'housing', 'loan']
+	- Numerical : Age 
+  - Numerical Value Standarization (Scaler), Categorical "One-Hot/Labeling"
+  - Train & Test Data Splitting with 30-70%
+-------------------------------------------------------------------------------------------------------------------------------------------
+- Step4: Study Correlation between Numerical Variables , Categorical Variables w.r.t Output Variable "y" //All Features not only 7
+-------------------------------------------------------------------------------------------------------------------------------------------
+ - We concluded the following from data analysis
+	- The majority of clients that are subscribed a loan deposit ranges between the ages of 30 and 50
+	- The Top Professionals that Customers belong to have Jobs (Admins, Blue-Collars, Technicans)
+	- Married followed by Single came with higher subscribtion Rate
+	- Customers with University Degree , with professional courses and High school came as top 3
+	- Customers with House Loans and no personal loans are mor elikely to make subscription
+	- do not have credit card by default
+	- Cell phone came as higher in acceptance rather than normal phones as contact method.
+	- Contacts dominating in summer months started from May-Aug
+	- Majority of customers did not subscribe for deposite (target variable)
+	- Target Vriable 'y' has high correlation with duration,
+	- Number of employees rate is highly correlated with employee variation rate
+	- Consumer price index is highly correlated with 3 months interest rate
+	- Employee variation rate also correlates with the 3 months interest rates
+-------------------------------------------------------------------------------------------------------------------------------------------
+- Step5 : Modeling/Evluation 
+-------------------------------------------------------------------------------------------------------------------------------------------
+  - Step5.0 : Build Base Dummy Classifier that Predicts Most Frequent Classess (No)
+	- Score : Model1_Dummy_Clssifier Score 0.887
+  - Step5.1 : Build Simple Logostic Regression with max_iter = 1000
+	-  Model2_Simple_Logistic_Regression Score 0.887
+  - Step5.2 : Simple Models Fitting
+	- Simple Logistic Regression, KNN, Decesion Tree and SVN Models have been created with the following Details
+		- [LR] Cross Validation Accuarcy Score: 0.8873 
+		- [KNN] Cross Validation Accuarcy Score: 0.8852 
+		- [SVM] Cross Validation Accuarcy Score: 0.8859
+		- [Decision Tree] Cross Validation Accuarcy Score: 0.8829 
+	- Then use Stratified Kfold to Avoid UnBalance in Classes 
+		- [LR] Cross Validation Accuarcy Score: 0.8873 
+		- [KNN] Cross Validation Accuarcy Score: 0.8855 
+		- [SVM] Cross Validation Accuarcy Score: 0.8861 
+		- [Decision Tree] Cross Validation Accuarcy Score: 0.8828 
+  - Step 5.3 : Looking for Best Model Parameters Using GridSearch
+	- To Explore Best Model Paramters we ran group of parameters, kernel variations to excercise the data with 
+	- KNN (NN Ranges from 1 to 10) --> Best Model 'model__n_neighbors': 8
+	- LR (C=[0.001, 0.01, 0.1, 1, 10, 100, 1000]) --> Best Model 'model__C': 0.001
+	- SVM (kernel=['rbf'], model__gamma=[1e-3,1e-4, 1e-5],model__C=[ 1, 10, 100]) --> Best Model {'model__C': 1, 'model__gamma': 0.001, 'model__kernel': 'rbf'}
+	- DT(criterion = ['gini','entropy'],model__max_depth = [5, 10, 15, 20, 25, 30]) --> Best Model {'model__criterion': 'entropy', 'model__max_depth': 5}
+  - Step 5.4 : Fine Tune Models by Better Feature Selection
+	- Some Models came with Precision = 0 or Recall very low seems that our Classes are UnBalnced
+	- Start Apply Plenty to Logistic Regression Models Best Accuracy Obtained 
+		- Logistic Regression with l1 Train Accuracy 0.8873434844438278
+		- Logistic Regression with l1 Test Accuracy 0.8873512988589464
+-------------------------------------------------------------------------------------------------------------------------------------------
+- Step6: GridSearch and Model Hyper Parameters 
+-------------------------------------------------------------------------------------------------------------------------------------------
+ Model Comparison as Follows
+	Model	Train Time	Train Accuracy	Test Accuracy
+0	KNN	1197.204684	0.888904	0.887351
+1	LR	37.443974	0.887239	0.887594
+2	SVN	3514.830603	0.887239	0.887594
+3	Decesion-Tree	108.224514	0.887760	0.888484
+-------------------------------------------------------------------------------------------------------------------------------------------
+-Step7: Deployment /Recommendation
+-------------------------------------------------------------------------------------------------------------------------------------------
+- Base Dummy Classifier (Predict More Frequent Class) Accuracy came as : 0.887
+- Simple Logistic Regression Came with same Accuracy as Base Classifier = 0.887
+- Create Default 4 Classifiers using Cross Validation for Data Splitting Resulted in : LR(0.8873), KNN(0.8852), SVM(0.8859), DT(0.8829) i.e some models came with accuracy less than Base 
+- So we utilized Stratified Kfold to handle unblanced Class Resulted in No Major Changes LR(0.8873), KNN(0.8855), SVM(0.8861), DT(0.8828)
+- GridSearch has been used to obtain best KNN, LR, SVM, DT Models Looking across multiple Hyper Parameters Results Demonstrates 
+- Finally we use Logistic Regression with Plenties for Feature Selection, best model came with plenty l1 rather than l2 
+		- Logistic Regression with l1 Train Accuracy 0.8873434844438278
+		- Logistic Regression with l1 Test Accuracy 0.8873512988589464
+ 
