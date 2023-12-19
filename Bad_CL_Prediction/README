@@ -16,9 +16,9 @@ Step1: Data Loading and Exploration
 - Our Own , Extractor is used to extract from github metadata , list of features we beleiev may contribute in predicting the good/bad code commits as refered in many publications about same topic.
 - Original Data Size is ( 28854 entries, 185 Coloumns Size of 40 MB)
 -------------------------------------------------------------------------------------------------------------------------------------------
-- Step2: Data Understanding , here we concluded 
+- Step2: Data Understanding here we concluded 
 -------------------------------------------------------------------------------------------------------------------------------------------
-  - 
+
   - The Traget Variable 'is_bad' describes if the code commits are bad commit (resuled in test failure) or good commit (has no test failure associated).
   - The extracted data covers up tp 185 Features and No of 28K data points) --> accessible from ./data/Code-Commits.csv 
   - Critical Note : Raw Data should not be shared in public as it reveal features list identification and extractor data 
@@ -63,14 +63,15 @@ Step1: Data Loading and Exploration
 	- author_commits_on_files_max : Author Experience (No of Commits he did in the File)
 	- author_failed_commits_on_files_max : Author Experience (No of Bad Commits he did in File)
 	- is_bad : Target Variable (Was this Bad Commit or Not )
-  - The Data has unbalnced Classes with majority of "No" : Ratio of Bad Commits vs all data points are ~21% 
-  - Data Demonstrates The different features show that they differ in the range of values. When modeling, standardization is required
 -------------------------------------------------------------------------------------------------------------------------------------------
-- Step3: Data Mainpulation
+- Step3: Data Cleaning & Features Explorations 
 -------------------------------------------------------------------------------------------------------------------------------------------
-  - Some Fileds Exclusion : Commit -ID String, Commiy-Message 
-  - Categoroical Data Encoding : Project ID , is_fix --> Label Encoding / will explore target encoding
-  - Change Type : Has been encoded as Multi Binary Encoding (Source, Test, Confid, Other, Doc) if Field of "Type_changed" contained any, 1 
+  - Data Demonstrates that different features differ in the range of values. When modeling, standardization is required
+  - Data Cleaning Done at this step covers
+    - Drop Missed Values for Target Variable : "is_bad"
+    - Exclude Additional Features in Raw Data that is Aggregated in multiple Measures (Mean, Median, Mode, Min, Range,..)
+    - Eliminate rows with "multiple co-authors, contributors and co-author names" as they are irrelevant to problem scope 
+    - Some Fileds Exclusion : Commit -ID String, Commit-Message  
   - Check null values, when we found many data points have empty entries for following list, this because if the change is not related to source rtl files then these metrices are empty or not extracted.
 	nested_cond_file_max                  2577
 	ext_modules_max                       2577
@@ -79,18 +80,29 @@ Step1: Data Loading and Exploration
 	avg_nest_lvl_cond_file_max            2577
 	avg_nest_lvl_loop_file_max            2577
 	nested_loops_file_max                 2577
-  - Numerical Value Standarization (Scaler)
-  - Train & Test Data Splitting with 30-70%
--------------------------------------------------------------------------------------------------------------------------------------------
-- Step4: Study Correlation between Numerical Variables , Categorical Variables w.r.t Output Variable "is_bad", we concluded 
-  - Outliers : Histogram has been drwan to understand the distribution of all numeric values , some outliers discovered --> further work in handling outliers should be done.
+  - Study Correlation between Numerical Variables , Categorical Variables w.r.t Output Variable "is_bad"
+  - Outliers : Histogram has been drwan to understand the distribution of all numeric values 
+  - Project 3, 2 has no Bad Commits only Project 1, 4 (Open Titan, In-House Project) has bad commits 
   - Project 4, has bad code check-ins vs project 1,which reflect more about complexity and large scope of proj4 vs proj1
   - Bad commit ratios in code changes that are not for bug fixes came higher than code changes for bug fixes, which contradict with some assumption about bug fixes changes may inroduce more bugs.
   - Highest bad commit ratios are related to code changes in source, with less failures happen in other changes like docs/config/..
   - Histogram of Numerical Features Distribution mainfest outliesr in many such as : num of affected files, dirs, added files, deleted files,... so outliers mainpulation must be handled (Work in Progress)
-  - 
+  - The Data has unbalnced Classes with majority of "No" : Ratio of Bad Commits vs all data points are ~21% 
+  - Some Features, which we consider critical come with low variance such as author_commits_on_files_max, avg_nest_lvl_loop_added_max, avg_nest_lvl_cond_added_max, nested_loops_add_max,..
+  - Some Features come as high uncorrelated: num_lines_deleted, comments_deleted, blank_lines_added,blank_lines_deleted.,..
+  -Categoroical Data Encoding : Project ID , is_fix --> Label Encoding / will explore target encoding
+  - Change Type : Has been encoded as Multi Binary Encoding (Source, Test, Confid, Other, Doc) if Field of "Type_changed" contained any, 1 
+  Numerical Value Standarization (Scaler)
+  - Train & Test Data Splitting with 30-70%
+  
+-----------------------------------------------------------------------------------------------------------------------------------------
+- Step4 : Features Selection , here we utilized multiple Feature Exploration Approaches
+-----------------------------------------------------------------------------------------------------------------------------------------
+- Here we covered many methods for feature selection : Filter Methods : Features with low variance - Variance Threshold, Select KBest, Information gain, percentaile, Model-Based Feature Selection and Iterative Feature Selection
+- We concluded thi step by try it with 4 classifiers DT, SVN, KNN, LR and draw the accuracy with all features and reduced features models
+- Decesion Tree Classifier Came as Best Classifer for our Model, Maximum Score Obtained with Information Gain Feature Selection Method with Value of 0.8117
 -------------------------------------------------------------------------------------------------------------------------------------------
-- Step5 : Modeling/Evluation --> Work In Progress for Feature Selection, Splitting and Hyper Parameters, Model Selections.
+- Step5 : Modeling (Trials of Basic Classification Models)
 -------------------------------------------------------------------------------------------------------------------------------------------
 
   - Step5.1 : Simple Models Fitting
@@ -104,19 +116,18 @@ Step1: Data Loading and Exploration
 		- [KNN] Cross Validation Accuarcy Score: 0.7543 +/- 0.0186 (std) min: 0.7222, max: 0.7546
 		- [SVM] Cross Validation Accuarcy Score: 0.7607 +/- 0.0178 (std) min: 0.7685, max: 0.7778
 		- [Decision Tree] Cross Validation Accuarcy Score: 0.7706 +/- 0.0261 (std) min: 0.7546, max: 0.8333
-  - Step 5.2 : Looking for Best Model Parameters Using GridSearch
+  - Kfolding, StratifiedKFold with LR, SVM, KNN, DT came with conslusion that DT is best Classifier with StratifiedKFold strategy for Cross Validation with maxscore value 0.8519
+ 
+-------------------------------------------------------------------------------------------------------------------------------------------
+- Step6 : Grid Search for Hyper Parmeters Selections
+-------------------------------------------------------------------------------------------------------------------------------------------
+-  Looking for Best Model Parameters Using GridSearch
 	- To Explore Best Model Paramters we ran group of parameters, kernel variations to excercise the data with 
 	- KNN (NN Ranges from 1 to 10) --> Best Model 'model__n_neighbors': 8 , accuracy 0.771 and Fit Time 6.7877631187438965
 	- LR (C=[0.001, 0.01, 0.1, 1, 10, 100, 1000]) --> Best Model 'model__C': 1, accuracy 0.777, Fit Time 105.25439095497131
 	- SVM (kernel=['rbf'], model__gamma=[1e-3,1e-4, 1e-5],model__C=[ 1, 10, 100]) --> {'model__C': 1, 'model__gamma': 0.0001, 'model__kernel': 'rbf'} with accuracy 0.779 and Fit Time of 53.450621366500854
 	- DT(criterion = ['gini','entropy'],model__max_depth = [5, 10, 15, 20, 25, 30]) --> Best Model 'model__criterion': 'entropy', 'model__max_depth': 5 , acuracy of 0.83, Fit Time : 3.375972032546997
--------------------------------------------------------------------------------------------------------------------------------------------
--Step6: Deployment /Recommendation
--------------------------------------------------------------------------------------------------------------------------------------------
-- Create Default 4 Classifiers using Cross Validation for Data Splitting Resulted in : LR(0.8102), KNN(0.7778), SVM(0.8148), DT(0.8333) i.e some models came with accuracy less than Base 
-- So we utilized Stratified Kfold to handle unblanced Class Resulted in No Major Changes LR(0.7963), KNN(0.7546), SVM(0.7778), DT(0.8333)
-- GridSearch has been used to obtain best KNN, LR, SVM, DT Models Looking across multiple Hyper Parameters Results Demonstrates 
-- Step6: GridSearch and Model Hyper Parameters 
+- Best Model From Grid Search was Decesion Tree with Max Depth of 5 and Criterion="entropy" Using 25 Features and KFold Validation --> Test Score 0.85116279, Train Score 0.85699588
 -------------------------------------------------------------------------------------------------------------------------------------------
 Model	Train Time	Train Accuracy	Test Accuracy
 0	KNN	6.787763	0.792852	0.760802
@@ -124,4 +135,24 @@ Model	Train Time	Train Accuracy	Test Accuracy
 2	SVN	53.450621	0.802780	0.771605
 3	Decesion-Tree	3.375972	0.855063	0.802469
 -------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------
+-Step6: Using Ensemble Machine Learning¶
+-------------------------------------------------------------------------------------------------------------------------------------------
+- We exercise ensemble techniques such as voting, boosting and Bagging using more of mini classifiers such as Random Forest, Extra Tree, MLP Classifier + original four classifiers, again Voting did not produce better results, out of bagging and boosting improve the accuracy to 83%
+-------------------------------------------------------------------------------------------------------------------------------------------
+-Step7: Deployment /Recommendation
+-------------------------------------------------------------------------------------------------------------------------------------------
+- Here we build the best model as we reached so far amd calculate the accuracy, precesion , recall as well as confusion matrix 
+- Our Work concluded that best model for Bad Code Check-Ins Prediction can be reached by using AdaBoostClassifier( DecisionTreeClassifier(max_depth=5), n_estimators=200, algorithm="SAMME.R", learning_rate=0.5) this give us
+83% Accuracy , 50% Recall, 65% Precesion which was accepted as initial trial for our business problem.
+- The Above Work, went through Major 8 Steps
+    -Step1: Data Exploration in which we finalize data cleaning, features types , Data size, Variance and Some Features Droping for Features at are out of scope to problem.
+    -Step2: Features Exploration, in which we examine correlation between categorical features and target variables, correlation between numerical features and their distribution
+    -Step3:Data Encoding in which we encode categorical data using label encoding, one hot encoding and scaling for numerical data.
+    -Step4:Feature Selection Iterations in which we exercise Features Filter (Variance Tests, KBest Selection, Percentile , Information Gain) as well as embedded model feature selection, or Iterative Feature Selections such as (REF, SFS) with all trials we exercised their effectiveness using Decision Tree, SVN, KNN and Logistic Regression Classifiers.
+    -Step5: Cross Validation with above 4 Classifiers using Kfold, Stratified Kfolding Techniques
+    -Step6: Grid Search for Hyper Parameters Selection : Above 3 steps demonstrates that Decision Tree with Stratified Kfolding and Kbest Select with Information Gain is best to use w.r.t accuracy score , yet to select best parameters for these models we ran Grid search to search for best Hyper Parameters for DT came as Tree with max depth = 5 and criteria of entropy
+    -Step7: we exercise ensemble techniques such as voting, boosting and Bagging using more of mini classifiers such as Random Forest, Extra Tree, MLP Classifier + original four classifiers, again Voting did not produce better results, out of bagging and boosting improve the accuracy to 83%
+    - Step8: Final Model Creation and Evaluation, her we picked ada boost as selected classifiers All Observations and conclusions are listed in every Section
+
  
